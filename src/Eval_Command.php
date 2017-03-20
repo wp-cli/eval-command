@@ -34,5 +34,3 @@ class Eval_Command extends WP_CLI_Command {
 		eval( $args[0] );
 	}
 }
-
-WP_CLI::add_command( 'eval', 'Eval_Command' );
