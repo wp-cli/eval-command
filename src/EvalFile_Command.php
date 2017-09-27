@@ -5,6 +5,9 @@ class EvalFile_Command extends WP_CLI_Command {
 	/**
 	 * Load and execute a PHP file.
 	 *
+	 * Note: because code is executed within a method, global variables need
+	 * to be explicitly globalized.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <file>
