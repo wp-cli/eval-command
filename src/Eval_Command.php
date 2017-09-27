@@ -5,6 +5,9 @@ class Eval_Command extends WP_CLI_Command {
 	/**
 	 * Execute arbitrary PHP code.
 	 *
+	 * Note: because code is executed within a method, global variables need
+	 * to be explicitly globalized.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <php-code>
