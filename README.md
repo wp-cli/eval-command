@@ -19,6 +19,9 @@ Execute arbitrary PHP code.
 wp eval <php-code> [--skip-wordpress]
 ~~~
 
+Note: because code is executed within a method, global variables need
+to be explicitly globalized.
+
 **OPTIONS**
 
 	<php-code>
@@ -46,6 +49,9 @@ Load and execute a PHP file.
 ~~~
 wp eval-file <file> [<arg>...] [--skip-wordpress]
 ~~~
+
+Note: because code is executed within a method, global variables need
+to be explicitly globalized.
 
 **OPTIONS**
 
