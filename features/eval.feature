@@ -29,6 +29,7 @@ Feature: Evaluating PHP code and files.
       """
       Error: This does not seem to be a WordPress install.
       """
+    And the return code should be 1
 
     When I run `wp eval 'var_dump(defined("WP_CONTENT_DIR"));' --skip-wordpress`
     Then STDOUT should contain:
@@ -49,6 +50,7 @@ Feature: Evaluating PHP code and files.
       """
       Error: This does not seem to be a WordPress install.
       """
+    And the return code should be 1
 
     When I run `wp eval-file script.php --skip-wordpress`
     Then STDOUT should contain:
