@@ -1,6 +1,6 @@
 {
     "name": "wp-cli/eval-command",
-    "description": "Execute arbitrary PHP code.",
+    "description": "Executes arbitrary PHP code or files.",
     "type": "wp-cli-package",
     "homepage": "https://github.com/wp-cli/eval-command",
     "support": {
