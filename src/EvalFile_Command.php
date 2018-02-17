@@ -11,7 +11,7 @@ class EvalFile_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * <file>
-	 * : The path to the PHP file to execute.
+	 * : The path to the PHP file to execute.  Use '-' to run code from stdin.
 	 *
 	 * [<arg>...]
 	 * : One or more arguments to pass to the file. They are placed in the $args variable.
@@ -28,7 +28,7 @@ class EvalFile_Command extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$file = array_shift( $args );
 
-		if ( !file_exists( $file ) ) {
+		if ( "-" !== $file && !file_exists( $file ) ) {
 			WP_CLI::error( "'$file' does not exist." );
 		}
 
@@ -40,7 +40,11 @@ class EvalFile_Command extends WP_CLI_Command {
 	}
 
 	private static function _eval( $file, $args ) {
-		include( $file );
+		if ( "-" === $file ) {
+			eval( "?>" . file_get_contents("php://stdin"));
+		} else {
+			include( $file );
+		}
 	}
 }
 
