@@ -56,7 +56,7 @@ to be explicitly globalized.
 **OPTIONS**
 
 	<file>
-		The path to the PHP file to execute.
+		The path to the PHP file to execute.  Use '-' to run code from stdin.
 
 	[<arg>...]
 		One or more arguments to pass to the file. They are placed in the $args variable.
