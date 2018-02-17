@@ -57,3 +57,17 @@ Feature: Evaluating PHP code and files.
       """
       bool(false)
       """
+
+  Scenario: Eval stdin with args
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      WP_CLI::line( implode( ' ', $args ) );
+      """
+
+    When I run `cat script.php | wp eval-file - x y z --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      x y z
+      """
