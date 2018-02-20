@@ -28,7 +28,7 @@ class EvalFile_Command extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$file = array_shift( $args );
 
-		if ( "-" !== $file && !file_exists( $file ) ) {
+		if ( '-' !== $file && !file_exists( $file ) ) {
 			WP_CLI::error( "'$file' does not exist." );
 		}
 
