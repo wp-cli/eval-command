@@ -27,7 +27,7 @@ Feature: Evaluating PHP code and files.
     When I try `wp eval 'var_dump(defined("WP_CONTENT_DIR"));'`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
     And the return code should be 1
 
@@ -48,7 +48,7 @@ Feature: Evaluating PHP code and files.
     When I try `wp eval-file script.php`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
     And the return code should be 1
 
