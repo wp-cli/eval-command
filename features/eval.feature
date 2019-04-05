@@ -21,6 +21,23 @@ Feature: Evaluating PHP code and files.
       foo bar
       """
 
+    Given a script.sh file:
+      """
+      #! /bin/bash
+      <?php
+      WP_CLI::line( implode( ' ', $args ) );
+      """
+
+    When I run `wp eval-file script.sh foo bar`
+    Then STDOUT should contain:
+      """
+      foo bar
+      """
+    But STDOUT should not contain:
+      """
+      #!
+      """
+
   Scenario: Eval without WordPress install
     Given an empty directory
 
