@@ -44,10 +44,35 @@ class EvalFile_Command extends WP_CLI_Command {
 			eval( '?>' . file_get_contents( 'php://stdin' ) );
 		} else {
 			$file_contents = file_get_contents( $file );
+
+			// Check for and remove she-bang.
 			if ( 0 === strpos( $file_contents, '#!' ) ) {
-				// Remove
 				$file_contents = preg_replace( '/^(#!.*)$/im', '', $file_contents );
 			}
+
+			$file = realpath( $file );
+			$dir  = dirname( $file );
+
+			// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
+			// We try to be smart and only replace the constants when they are not within quotes.
+			// Regular expressions being stateless, this is probably not 100% correct for edge cases.
+			// See https://regex101.com/r/9hXp5d/2/
+			$file_contents = preg_replace_callback(
+				'/(?>\'[^\']*?\')|(?>"[^"]*?")|(?<file>__FILE__)|(?<dir>__DIR__)/m',
+				function ( $matches ) use ( $file, $dir ) {
+					if ( ! empty( $matches['file'] ) ) {
+						return "'{$file}'";
+					}
+
+					if ( ! empty( $matches['dir'] ) ) {
+						return "'{$dir}'";
+					}
+
+					return $matches[0];
+				},
+				$file_contents
+			);
+
 			eval( '?>' . $file_contents );
 		}
 	}
