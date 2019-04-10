@@ -158,3 +158,28 @@ Feature: Evaluating PHP code and files.
       """
       eval()'d code
       """
+
+  Scenario: Eval-file will use the correct __FILE__ constant value
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      echo __FILE__ . PHP_EOL;
+      """
+    And a dir_script.php file:
+      """
+      <?php
+      echo __DIR__ . '/script.php' . PHP_EOL;
+      """
+    And I run `wp eval-file script.php --skip-wordpress`
+    And save STDOUT as {FILE_OUTPUT}
+
+    When I run `wp eval-file dir_script.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      {FILE_OUTPUT}
+      """
+    And STDOUT should not contain:
+      """
+      eval()'d code
+      """
