@@ -88,3 +88,73 @@ Feature: Evaluating PHP code and files.
       """
       x y z
       """
+
+  Scenario: Eval-file will use the correct __FILE__ constant value
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      echo __FILE__;
+      """
+
+    When I run `wp eval-file script.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      /script.php
+      """
+    And STDOUT should not contain:
+      """
+      eval()'d code
+      """
+
+  Scenario: Eval-file will not replace __FILE__ when quoted
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      echo '__FILE__';
+      echo "__FILE__";
+      echo '"__FILE__"';
+      echo "'__FILE__'";
+
+      echo ' foo __FILE__ bar ';
+      echo " foo __FILE__ bar ";
+      echo '" foo __FILE__ bar "';
+      echo "' foo __FILE__ bar '";
+      """
+
+    When I run `wp eval-file script.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      __FILE__
+      """
+    And STDOUT should not contain:
+      """
+      /script.php
+      """
+    And STDOUT should not contain:
+      """
+      eval()'d code
+      """
+
+  Scenario: Eval-file can handle both quoted and unquoted __FILE__ correctly
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      echo ' __FILE__ => ' . __FILE__;
+      """
+
+    When I run `wp eval-file script.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      __FILE__ =>
+      """
+    And STDOUT should contain:
+      """
+      /script.php
+      """
+    And STDOUT should not contain:
+      """
+      eval()'d code
+      """
