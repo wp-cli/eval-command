@@ -36,10 +36,10 @@ class EvalFile_Command extends WP_CLI_Command {
 			WP_CLI::get_runner()->load_wordpress();
 		}
 
-		self::_eval( $file, $args );
+		self::execute_eval( $file, $args );
 	}
 
-	private static function _eval( $file, $args ) {
+	private static function execute_eval( $file, $args ) {
 		if ( '-' === $file ) {
 			eval( '?>' . file_get_contents( 'php://stdin' ) );
 		} else {
