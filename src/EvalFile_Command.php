@@ -64,7 +64,7 @@ class EvalFile_Command extends WP_CLI_Command {
 	 * Evaluate a provided file.
 	 *
 	 * @param string $file Filepath to execute, or - for STDIN.
-	 * @param mixed  $args One or more arguments to pass to the file.
+	 * @param mixed  $args Array of positional arguments to pass to the file.
 	 */
 	private static function execute_eval( $file, $args ) {
 		if ( '-' === $file ) {
