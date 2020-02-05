@@ -9,7 +9,7 @@ class EvalFile_Command extends WP_CLI_Command {
 	 *
 	 * @var string
 	 */
-	const SHE_BANG_PATTERN = '/^(#!.*)$/m';
+	const SHEBANG_PATTERN = '/^(#!.*)$/m';
 
 	/**
 	 * Regular expression pattern to match __FILE__ and __DIR__ constants.
@@ -73,7 +73,7 @@ class EvalFile_Command extends WP_CLI_Command {
 
 			// Check for and remove she-bang.
 			if ( 0 === strncmp( $file_contents, '#!', 2 ) ) {
-				$file_contents = preg_replace( static::SHE_BANG_PATTERN, '', $file_contents );
+				$file_contents = preg_replace( static::SHEBANG_PATTERN, '', $file_contents );
 			}
 
 			$file = realpath( $file );
