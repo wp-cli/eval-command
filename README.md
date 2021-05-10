@@ -3,7 +3,7 @@ wp-cli/eval-command
 
 Executes arbitrary PHP code or files.
 
-[![Build Status](https://travis-ci.org/wp-cli/eval-command.svg?branch=master)](https://travis-ci.org/wp-cli/eval-command)
+
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
