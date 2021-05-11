@@ -12,18 +12,6 @@ class EvalFile_Command extends WP_CLI_Command {
 	const SHEBANG_PATTERN = '/^(#!.*)$/m';
 
 	/**
-	 * Regular expression pattern to match __FILE__ and __DIR__ constants.
-	 *
-	 * We try to be smart and only replace the constants when they are not within quotes.
-	 * Regular expressions being stateless, this is probably not 100% correct for edge cases.
-	 *
-	 * @see https://regex101.com/r/9hXp5d/4/
-	 *
-	 * @var string
-	 */
-	const FILE_DIR_PATTERN = '/(?>\'[^\']*?\')|(?>"[^"]*?")|(?<file>\b__FILE__\b)|(?<dir>\b__DIR__\b)/m';
-
-	/**
 	 * Loads and executes a PHP file.
 	 *
 	 * Note: because code is executed within a method, global variables need
@@ -72,30 +60,13 @@ class EvalFile_Command extends WP_CLI_Command {
 		} else {
 			$file_contents = file_get_contents( $file );
 
+			// Adjust for __FILE__ and __DIR__ magic constants.
+			$file_contents = Utils\replace_path_consts( $file_contents, $file );
+
 			// Check for and remove she-bang.
 			if ( 0 === strncmp( $file_contents, '#!', 2 ) ) {
 				$file_contents = preg_replace( static::SHEBANG_PATTERN, '', $file_contents );
 			}
-
-			$file = realpath( $file );
-			$dir  = dirname( $file );
-
-			// Replace __FILE__ and __DIR__ constants with value of $file or $dir.
-			$file_contents = preg_replace_callback(
-				static::FILE_DIR_PATTERN,
-				static function ( $matches ) use ( $file, $dir ) {
-					if ( ! empty( $matches['file'] ) ) {
-						return "'{$file}'";
-					}
-
-					if ( ! empty( $matches['dir'] ) ) {
-						return "'{$dir}'";
-					}
-
-					return $matches[0];
-				},
-				$file_contents
-			);
 
 			eval( '?>' . $file_contents );
 		}

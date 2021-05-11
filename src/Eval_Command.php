@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 class Eval_Command extends WP_CLI_Command {
 
 	/**
@@ -30,7 +32,7 @@ class Eval_Command extends WP_CLI_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 
-		if ( null === \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-wordpress' ) ) {
+		if ( null === Utils\get_flag_value( $assoc_args, 'skip-wordpress' ) ) {
 			WP_CLI::get_runner()->load_wordpress();
 		}
 
