@@ -44,11 +44,15 @@ class EvalFile_Command extends WP_CLI_Command {
 			WP_CLI::error( "'$file' does not exist." );
 		}
 
+		$use_include = Utils\get_flag_value( $assoc_args, 'use-include', false );
+
+		if ( '-' === $file && $use_include ) {
+				WP_CLI::error( '"-" and "--use-include" parameters cannot be used at the same time' );
+		}
+
 		if ( null === Utils\get_flag_value( $assoc_args, 'skip-wordpress' ) ) {
 			WP_CLI::get_runner()->load_wordpress();
 		}
-
-		$use_include = Utils\get_flag_value( $assoc_args, 'use-include', false );
 
 		self::execute_eval( $file, $args, $use_include );
 	}
@@ -62,17 +66,10 @@ class EvalFile_Command extends WP_CLI_Command {
 	 */
 	private static function execute_eval( $file, $args, $use_include ) {
 		if ( '-' === $file ) {
-			if ( $use_include ) {
-				WP_CLI::error( '"-" and "--use-include" parameters cannot be used at the same time' );
-			}
 			eval( '?>' . file_get_contents( 'php://stdin' ) );
-		} else {
-
-			if ( $use_include ) {
+		} elseif ( $use_include ) {
 				include $file;
-				return;
-			}
-
+		} else {
 			$file_contents = file_get_contents( $file );
 
 			// Adjust for __FILE__ and __DIR__ magic constants.
