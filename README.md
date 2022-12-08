@@ -47,7 +47,7 @@ to be explicitly globalized.
 Loads and executes a PHP file.
 
 ~~~
-wp eval-file <file> [<arg>...] [--skip-wordpress]
+wp eval-file <file> [<arg>...] [--skip-wordpress] [--use-include]
 ~~~
 
 Note: because code is executed within a method, global variables need
@@ -63,6 +63,9 @@ to be explicitly globalized.
 
 	[--skip-wordpress]
 		Load and execute file without loading WordPress.
+
+	[--use-include]
+		Process the provided file via include instead of evaluating its contents.
 
 ## Installing
 
