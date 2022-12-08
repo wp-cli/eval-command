@@ -89,6 +89,7 @@ Feature: Evaluating PHP code and files.
       x y z
       """
 
+  @require-php-7.0
   Scenario: Eval stdin with use-include parameter without WordPress install
     Given an empty directory
     And a script.php file:
