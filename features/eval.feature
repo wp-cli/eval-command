@@ -105,6 +105,7 @@ Feature: Evaluating PHP code and files.
       """
     And the return code should be 1
 
+  @require-php-7.0
   Scenario: Eval file with use-include parameter without WordPress install
     Given an empty directory
     And a script.php file:
@@ -120,6 +121,7 @@ Feature: Evaluating PHP code and files.
       foo bar
       """
 
+  @require-php-7.0
   Scenario: Eval stdin with use-include parameter
     Given a WP install
     And a script.php file:
@@ -135,6 +137,7 @@ Feature: Evaluating PHP code and files.
       """
     And the return code should be 1
 
+  @require-php-7.0
   Scenario: Eval file with use-include parameter
     Given a WP install
     And a script.php file:
