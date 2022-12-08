@@ -68,7 +68,7 @@ class EvalFile_Command extends WP_CLI_Command {
 		if ( '-' === $file ) {
 			eval( '?>' . file_get_contents( 'php://stdin' ) );
 		} elseif ( $use_include ) {
-				include $file;
+			include $file;
 		} else {
 			$file_contents = file_get_contents( $file );
 
