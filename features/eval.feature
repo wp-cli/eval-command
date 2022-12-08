@@ -89,6 +89,71 @@ Feature: Evaluating PHP code and files.
       x y z
       """
 
+  @require-php-7.0
+  Scenario: Eval stdin with use-include parameter without WordPress install
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      declare(strict_types=1);
+      WP_CLI::line( implode( ' ', $args ) );
+      """
+
+    When I try `cat script.php | wp eval-file - foo bar --skip-wordpress --use-include`
+    Then STDERR should be:
+      """
+      Error: "-" and "--use-include" parameters cannot be used at the same time
+      """
+    And the return code should be 1
+
+  @require-php-7.0
+  Scenario: Eval file with use-include parameter without WordPress install
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      declare(strict_types=1);
+      WP_CLI::line( implode( ' ', $args ) );
+      """
+
+    When I run `wp eval-file script.php foo bar --skip-wordpress --use-include`
+    Then STDOUT should contain:
+      """
+      foo bar
+      """
+
+  @require-php-7.0
+  Scenario: Eval stdin with use-include parameter
+    Given a WP install
+    And a script.php file:
+      """
+      <?php
+      declare(strict_types=1);
+      WP_CLI::line( implode( ' ', $args ) );
+      """
+    When I try `cat script.php | wp eval-file - foo bar --use-include`
+    Then STDERR should be:
+      """
+      Error: "-" and "--use-include" parameters cannot be used at the same time
+      """
+    And the return code should be 1
+
+  @require-php-7.0
+  Scenario: Eval file with use-include parameter
+    Given a WP install
+    And a script.php file:
+      """
+      <?php
+      declare(strict_types=1);
+      WP_CLI::line( implode( ' ', $args ) );
+      """
+
+    When I run `wp eval-file script.php foo bar --use-include`
+    Then STDOUT should contain:
+      """
+      foo bar
+      """
+
   Scenario: Eval-file will use the correct __FILE__ constant value
     Given an empty directory
     And a script.php file:
