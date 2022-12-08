@@ -28,6 +28,9 @@ class EvalFile_Command extends WP_CLI_Command {
 	 * [--skip-wordpress]
 	 * : Load and execute file without loading WordPress.
 	 *
+	 * [--use-include]
+	 * : Load and execute file using include instead of eval.
+	 *
 	 * @when before_wp_load
 	 *
 	 * ## EXAMPLES
@@ -45,7 +48,9 @@ class EvalFile_Command extends WP_CLI_Command {
 			WP_CLI::get_runner()->load_wordpress();
 		}
 
-		self::execute_eval( $file, $args );
+		$use_include = Utils\get_flag_value( $assoc_args, 'use-include', false );
+
+		self::execute_eval( $file, $args, $use_include );
 	}
 
 	/**
@@ -53,11 +58,21 @@ class EvalFile_Command extends WP_CLI_Command {
 	 *
 	 * @param string $file Filepath to execute, or - for STDIN.
 	 * @param mixed  $args Array of positional arguments to pass to the file.
+	 * @param bool $use_include Use include instead of eval given a $file Filepath to execute.
 	 */
-	private static function execute_eval( $file, $args ) {
+	private static function execute_eval( $file, $args, $use_include ) {
 		if ( '-' === $file ) {
+			if ( $use_include ) {
+				WP_CLI::error( '"-" and "--use-include" parameters cannot be used at the same time' );
+			}
 			eval( '?>' . file_get_contents( 'php://stdin' ) );
 		} else {
+
+			if ( $use_include ) {
+				include $file;
+				return;
+			}
+
 			$file_contents = file_get_contents( $file );
 
 			// Adjust for __FILE__ and __DIR__ magic constants.
