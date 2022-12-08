@@ -29,7 +29,7 @@ class EvalFile_Command extends WP_CLI_Command {
 	 * : Load and execute file without loading WordPress.
 	 *
 	 * [--use-include]
-	 * : Load and execute file using include instead of eval.
+	 * : Process the provided file via include instead of evaluating its contents.
 	 *
 	 * @when before_wp_load
 	 *
