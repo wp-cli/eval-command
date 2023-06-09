@@ -38,8 +38,6 @@ class EvalFile_Command extends WP_CLI_Command {
 	 *     # Execute file my-code.php and pass value1 and value2 arguments. 
 	 *     # Access arguments in $args array ($args[0] = value1, $args[1] = value2).
 	 *     $ wp eval-file my-code.php value1 value2
-	 *
-	 * @package wp-cli
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$file = array_shift( $args );
