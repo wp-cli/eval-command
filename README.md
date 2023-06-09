@@ -59,7 +59,7 @@ to be explicitly globalized.
 		The path to the PHP file to execute.  Use '-' to run code from STDIN.
 
 	[<arg>...]
-		One or more arguments to pass to the file. They are placed in the $args variable.
+		One or more positional arguments to pass to the file. They are placed in the $args variable.
 
 	[--skip-wordpress]
 		Load and execute file without loading WordPress.
