@@ -86,4 +86,3 @@ class EvalFile_Command extends WP_CLI_Command {
 		}
 	}
 }
-
