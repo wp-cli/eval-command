@@ -72,7 +72,7 @@ class EvalFile_Command extends WP_CLI_Command {
 		} elseif ( $use_include ) {
 			include $file;
 		} else {
-			$file_contents = file_get_contents( $file );
+			$file_contents = (string) file_get_contents( $file );
 
 			// Adjust for __FILE__ and __DIR__ magic constants.
 			$file_contents = Utils\replace_path_consts( $file_contents, $file );
