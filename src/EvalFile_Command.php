@@ -68,6 +68,7 @@ class EvalFile_Command extends WP_CLI_Command {
 	 */
 	private static function execute_eval( $file, $positional_args, $use_include ) {
 		global $args;
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 		$args = $positional_args;
 		unset( $positional_args );
 
