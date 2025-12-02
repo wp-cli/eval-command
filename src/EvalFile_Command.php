@@ -63,10 +63,15 @@ class EvalFile_Command extends WP_CLI_Command {
 	 * Evaluate a provided file.
 	 *
 	 * @param string $file Filepath to execute, or - for STDIN.
-	 * @param mixed  $args Array of positional arguments to pass to the file.
+	 * @param mixed  $positional_args Array of positional arguments to pass to the file.
 	 * @param bool $use_include Process the provided file via include instead of evaluating its contents.
 	 */
-	private static function execute_eval( $file, $args, $use_include ) {
+	private static function execute_eval( $file, $positional_args, $use_include ) {
+		global $args;
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+		$args = $positional_args;
+		unset( $positional_args );
+
 		if ( '-' === $file ) {
 			eval( '?>' . file_get_contents( 'php://stdin' ) );
 		} elseif ( $use_include ) {
