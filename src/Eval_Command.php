@@ -48,7 +48,7 @@ class Eval_Command extends WP_CLI_Command {
 
 		if ( $hook ) {
 			$code = $args[0];
-			add_action(
+			WP_CLI::add_wp_hook(
 				$hook,
 				function () use ( $code ) {
 					eval( $code );

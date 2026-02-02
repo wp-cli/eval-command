@@ -66,7 +66,7 @@ class EvalFile_Command extends WP_CLI_Command {
 		}
 
 		if ( $hook ) {
-			add_action(
+			WP_CLI::add_wp_hook(
 				$hook,
 				function () use ( $file, $args, $use_include ) {
 					self::execute_eval( $file, $args, $use_include );
