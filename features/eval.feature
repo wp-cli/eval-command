@@ -248,3 +248,88 @@ Feature: Evaluating PHP code and files.
       """
       eval()'d code
       """
+
+  Scenario: Eval with --hook flag
+    Given a WP install
+
+    When I run `wp eval 'echo "Hook: " . current_action();' --hook=init`
+    Then STDOUT should contain:
+      """
+      Hook: init
+      """
+
+    When I run `wp eval 'echo "Hook: " . current_action();' --hook=wp_loaded`
+    Then STDOUT should contain:
+      """
+      Hook: wp_loaded
+      """
+
+  Scenario: Eval-file with --hook flag
+    Given a WP install
+    And a hook-script.php file:
+      """
+      <?php
+      echo "Hook: " . current_action() . "\n";
+      echo "Is admin: " . (is_admin() ? 'yes' : 'no') . "\n";
+      """
+
+    When I run `wp eval-file hook-script.php --hook=init`
+    Then STDOUT should contain:
+      """
+      Hook: init
+      """
+    And STDOUT should contain:
+      """
+      Is admin:
+      """
+
+    When I run `wp eval-file hook-script.php --hook=wp_loaded`
+    Then STDOUT should contain:
+      """
+      Hook: wp_loaded
+      """
+
+  Scenario: Eval with --hook and --skip-wordpress should error
+    Given a WP install
+
+    When I try `wp eval 'echo "test";' --hook=init --skip-wordpress`
+    Then STDERR should contain:
+      """
+      Error: The --hook parameter cannot be used with --skip-wordpress.
+      """
+    And the return code should be 1
+
+  Scenario: Eval-file with --hook and --skip-wordpress should error
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      echo "test";
+      """
+
+    When I try `wp eval-file script.php --hook=init --skip-wordpress`
+    Then STDERR should contain:
+      """
+      Error: The --hook parameter cannot be used with --skip-wordpress.
+      """
+    And the return code should be 1
+
+  Scenario: Eval-file with --hook and positional arguments
+    Given a WP install
+    And a args-script.php file:
+      """
+      <?php
+      echo "Hook: " . current_action() . "\n";
+      echo "Args: " . implode(' ', $args) . "\n";
+      """
+
+    When I run `wp eval-file args-script.php arg1 arg2 --hook=init`
+    Then STDOUT should contain:
+      """
+      Hook: init
+      """
+    And STDOUT should contain:
+      """
+      Args: arg1 arg2
+      """
+

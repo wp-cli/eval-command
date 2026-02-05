@@ -31,6 +31,9 @@ class EvalFile_Command extends WP_CLI_Command {
 	 * [--use-include]
 	 * : Process the provided file via include instead of evaluating its contents.
 	 *
+	 * [--hook=<hook>]
+	 * : Execute file after a specific WordPress hook has fired.
+	 *
 	 * @when before_wp_load
 	 *
 	 * ## EXAMPLES
@@ -38,6 +41,9 @@ class EvalFile_Command extends WP_CLI_Command {
 	 *     # Execute file my-code.php and pass value1 and value2 arguments.
 	 *     # Access arguments in $args array ($args[0] = value1, $args[1] = value2).
 	 *     $ wp eval-file my-code.php value1 value2
+	 *
+	 *     # Execute file after the 'init' hook.
+	 *     $ wp eval-file my-code.php --hook=init
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$file = array_shift( $args );
@@ -52,11 +58,28 @@ class EvalFile_Command extends WP_CLI_Command {
 				WP_CLI::error( '"-" and "--use-include" parameters cannot be used at the same time' );
 		}
 
-		if ( null === Utils\get_flag_value( $assoc_args, 'skip-wordpress' ) ) {
+		$execute_closure = function () use ( $file, $args, $use_include ) {
+			self::execute_eval( $file, $args, $use_include );
+		};
+
+		$hook           = Utils\get_flag_value( $assoc_args, 'hook' );
+		$skip_wordpress = Utils\get_flag_value( $assoc_args, 'skip-wordpress' );
+
+		if ( $hook && null !== $skip_wordpress ) {
+			WP_CLI::error( 'The --hook parameter cannot be used with --skip-wordpress.' );
+		}
+
+		if ( $hook ) {
+			WP_CLI::add_wp_hook( $hook, $execute_closure );
+		}
+
+		if ( null === $skip_wordpress ) {
 			WP_CLI::get_runner()->load_wordpress();
 		}
 
-		self::execute_eval( $file, $args, $use_include );
+		if ( ! $hook ) {
+			$execute_closure();
+		}
 	}
 
 	/**
