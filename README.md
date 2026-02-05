@@ -16,7 +16,7 @@ This package implements the following commands:
 Executes arbitrary PHP code.
 
 ~~~
-wp eval <php-code> [--skip-wordpress]
+wp eval <php-code> [--skip-wordpress] [--hook=<hook>]
 ~~~
 
 Note: because code is executed within a method, global variables need
@@ -30,6 +30,9 @@ to be explicitly globalized.
 	[--skip-wordpress]
 		Execute code without loading WordPress.
 
+	[--hook=<hook>]
+		Execute code after a specific WordPress hook has fired.
+
 **EXAMPLES**
 
     # Display WordPress content directory.
@@ -40,6 +43,10 @@ to be explicitly globalized.
     $ wp eval 'echo rand();' --skip-wordpress
     479620423
 
+    # Execute code after WordPress is fully loaded.
+    $ wp eval 'echo "Current user: " . wp_get_current_user()->user_login;' --hook=wp_loaded
+    Current user: admin
+
 
 
 ### wp eval-file
@@ -47,7 +54,7 @@ to be explicitly globalized.
 Loads and executes a PHP file.
 
 ~~~
-wp eval-file <file> [<arg>...] [--skip-wordpress] [--use-include]
+wp eval-file <file> [<arg>...] [--skip-wordpress] [--use-include] [--hook=<hook>]
 ~~~
 
 Note: because code is executed within a method, global variables need
@@ -66,6 +73,9 @@ to be explicitly globalized.
 
 	[--use-include]
 		Process the provided file via include instead of evaluating its contents.
+
+	[--hook=<hook>]
+		Execute file after a specific WordPress hook has fired.
 
 ## Installing
 
