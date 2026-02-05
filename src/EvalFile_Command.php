@@ -58,6 +58,10 @@ class EvalFile_Command extends WP_CLI_Command {
 				WP_CLI::error( '"-" and "--use-include" parameters cannot be used at the same time' );
 		}
 
+		$execute_closure = function () use ( $file, $args, $use_include ) {
+			self::execute_eval( $file, $args, $use_include );
+		};
+
 		$hook           = Utils\get_flag_value( $assoc_args, 'hook' );
 		$skip_wordpress = Utils\get_flag_value( $assoc_args, 'skip-wordpress' );
 
@@ -66,12 +70,7 @@ class EvalFile_Command extends WP_CLI_Command {
 		}
 
 		if ( $hook ) {
-			WP_CLI::add_wp_hook(
-				$hook,
-				function () use ( $file, $args, $use_include ) {
-					self::execute_eval( $file, $args, $use_include );
-				}
-			);
+			WP_CLI::add_wp_hook( $hook, $execute_closure );
 		}
 
 		if ( null === $skip_wordpress ) {
@@ -79,7 +78,7 @@ class EvalFile_Command extends WP_CLI_Command {
 		}
 
 		if ( ! $hook ) {
-			self::execute_eval( $file, $args, $use_include );
+			$execute_closure();
 		}
 	}
 

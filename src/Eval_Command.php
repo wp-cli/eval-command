@@ -39,6 +39,10 @@ class Eval_Command extends WP_CLI_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 
+		$execute_closure = function () use ( $args ) {
+			eval( $args[0] );
+		};
+
 		$hook           = Utils\get_flag_value( $assoc_args, 'hook' );
 		$skip_wordpress = Utils\get_flag_value( $assoc_args, 'skip-wordpress' );
 
@@ -47,13 +51,7 @@ class Eval_Command extends WP_CLI_Command {
 		}
 
 		if ( $hook ) {
-			$code = $args[0];
-			WP_CLI::add_wp_hook(
-				$hook,
-				function () use ( $code ) {
-					eval( $code );
-				}
-			);
+			WP_CLI::add_wp_hook( $hook, $execute_closure );
 		}
 
 		if ( null === $skip_wordpress ) {
@@ -61,7 +59,7 @@ class Eval_Command extends WP_CLI_Command {
 		}
 
 		if ( ! $hook ) {
-			eval( $args[0] );
+			$execute_closure();
 		}
 	}
 }
