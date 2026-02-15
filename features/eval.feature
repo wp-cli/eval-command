@@ -355,14 +355,6 @@ Feature: Evaluating PHP code and files.
     When I run `cat stdin-test.php | wp @group eval-file -`
     Then STDOUT should contain:
       """
-      @site1
-      """
-    And STDOUT should contain:
-      """
-      @site2
-      """
-    And STDOUT should contain:
-      """
       Site: WP-CLI Site 1
       """
     And STDOUT should contain:

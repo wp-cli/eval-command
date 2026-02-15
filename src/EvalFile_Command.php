@@ -119,9 +119,17 @@ class EvalFile_Command extends WP_CLI_Command {
 			// but they all share the same STDIN. Once STDIN is read, it's consumed.
 			// We cache it in a temporary file that persists across processes.
 			if ( null === self::$stdin_cache ) {
-				// Use parent PID to create a shared cache file across all child processes
-				$parent_pid             = posix_getppid();
-				self::$stdin_cache_file = sys_get_temp_dir() . '/wp-cli-eval-stdin-' . $parent_pid . '.php';
+				// Get a unique identifier for the cache file
+				// Use parent PID on Unix-like systems for sharing across child processes
+				// On Windows, this feature may have limitations due to lack of posix_getppid()
+				if ( function_exists( 'posix_getppid' ) ) {
+					$cache_id = posix_getppid();
+				} else {
+					// On Windows or systems without POSIX, use an environment variable if available
+					// or fall back to current PID (which won't share across processes)
+					$cache_id = getenv( 'WP_CLI_STDIN_CACHE_ID' ) ?: getmypid();
+				}
+				self::$stdin_cache_file = sys_get_temp_dir() . '/wp-cli-eval-stdin-' . $cache_id . '.php';
 
 				// Check if cache file already exists (created by a previous subprocess)
 				if ( file_exists( self::$stdin_cache_file ) ) {
@@ -130,6 +138,9 @@ class EvalFile_Command extends WP_CLI_Command {
 						WP_CLI::error( 'Failed to read from STDIN cache file.' );
 					}
 					self::$stdin_cache = (string) $stdin_contents;
+
+					// Clean up old cache files (older than 1 hour) to prevent accumulation
+					self::cleanup_old_cache_files();
 				} else {
 					// First process: read from STDIN and cache it
 					$stdin_contents = file_get_contents( 'php://stdin' );
@@ -144,10 +155,13 @@ class EvalFile_Command extends WP_CLI_Command {
 						WP_CLI::error( 'Failed to write STDIN cache file.' );
 					}
 
-					// Note: We intentionally don't clean up the cache file immediately.
-					// The parent process (or system temp cleanup) will handle this.
+					// Clean up old cache files (older than 1 hour) to prevent accumulation
+					self::cleanup_old_cache_files();
+
+					// Note: We intentionally don't clean up the current cache file immediately.
 					// If we delete it in the shutdown function, subsequent child processes
-					// won't be able to read it.
+					// won't be able to read it. The cleanup_old_cache_files() method handles
+					// removal of stale cache files.
 				}
 			}
 			eval( '?>' . self::$stdin_cache );
@@ -165,6 +179,35 @@ class EvalFile_Command extends WP_CLI_Command {
 			}
 
 			eval( '?>' . $file_contents );
+		}
+	}
+
+	/**
+	 * Clean up old STDIN cache files to prevent accumulation.
+	 *
+	 * Removes cache files older than 1 hour from the system temp directory.
+	 * This is called when creating or reading a cache file to ensure stale
+	 * files don't accumulate if processes terminate unexpectedly.
+	 */
+	private static function cleanup_old_cache_files() {
+		$temp_dir      = sys_get_temp_dir();
+		$cache_pattern = $temp_dir . '/wp-cli-eval-stdin-*.php';
+		$cache_files   = glob( $cache_pattern );
+		$one_hour_ago  = time() - 3600;
+
+		if ( ! empty( $cache_files ) ) {
+			foreach ( $cache_files as $cache_file ) {
+				// Skip the current cache file
+				if ( $cache_file === self::$stdin_cache_file ) {
+					continue;
+				}
+
+				// Delete files older than 1 hour
+				$file_time = filemtime( $cache_file );
+				if ( false !== $file_time && $file_time < $one_hour_ago ) {
+					@unlink( $cache_file );
+				}
+			}
 		}
 	}
 }
