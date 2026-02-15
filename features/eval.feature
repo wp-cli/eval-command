@@ -333,3 +333,40 @@ Feature: Evaluating PHP code and files.
       Args: arg1 arg2
       """
 
+  Scenario: Eval-file with STDIN should work with alias groups
+    Given a WP installation in 'site1'
+    And a WP installation in 'site2'
+    And a wp-cli.yml file:
+      """
+      @group:
+        - @site1
+        - @site2
+      @site1:
+        path: site1
+      @site2:
+        path: site2
+      """
+    And a stdin-test.php file:
+      """
+      <?php
+      WP_CLI::line('Site: ' . get_bloginfo('name'));
+      """
+
+    When I run `cat stdin-test.php | wp @group eval-file -`
+    Then STDOUT should contain:
+      """
+      @site1
+      """
+    And STDOUT should contain:
+      """
+      @site2
+      """
+    And STDOUT should contain:
+      """
+      Site: WP-CLI Site 1
+      """
+    And STDOUT should contain:
+      """
+      Site: WP-CLI Site 2
+      """
+

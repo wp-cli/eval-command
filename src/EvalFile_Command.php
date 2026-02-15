@@ -14,12 +14,20 @@ class EvalFile_Command extends WP_CLI_Command {
 	/**
 	 * Cache for STDIN contents to support alias groups.
 	 *
-	 * When using alias groups, the same command is executed multiple times.
-	 * STDIN can only be read once, so we cache it for reuse.
+	 * When using alias groups, the same command is executed multiple times
+	 * in separate processes. STDIN can only be read once, so we cache it
+	 * in a temporary file that persists across processes.
 	 *
 	 * @var string|null
 	 */
 	private static $stdin_cache = null;
+
+	/**
+	 * Temporary file path for STDIN cache.
+	 *
+	 * @var string|null
+	 */
+	private static $stdin_cache_file = null;
 
 	/**
 	 * Loads and executes a PHP file.
@@ -109,14 +117,38 @@ class EvalFile_Command extends WP_CLI_Command {
 			// Cache STDIN contents to support alias groups.
 			// When using alias groups, each site runs in a separate process,
 			// but they all share the same STDIN. Once STDIN is read, it's consumed.
-			// We cache it on first read so subsequent sites can reuse it.
+			// We cache it in a temporary file that persists across processes.
 			if ( null === self::$stdin_cache ) {
-				$stdin_contents = file_get_contents( 'php://stdin' );
-				if ( false === $stdin_contents ) {
-					WP_CLI::error( 'Failed to read from STDIN.' );
+				// Use parent PID to create a shared cache file across all child processes
+				$parent_pid             = posix_getppid();
+				self::$stdin_cache_file = sys_get_temp_dir() . '/wp-cli-eval-stdin-' . $parent_pid . '.php';
+
+				// Check if cache file already exists (created by a previous subprocess)
+				if ( file_exists( self::$stdin_cache_file ) ) {
+					$stdin_contents = file_get_contents( self::$stdin_cache_file );
+					if ( false === $stdin_contents ) {
+						WP_CLI::error( 'Failed to read from STDIN cache file.' );
+					}
+					self::$stdin_cache = (string) $stdin_contents;
+				} else {
+					// First process: read from STDIN and cache it
+					$stdin_contents = file_get_contents( 'php://stdin' );
+					if ( false === $stdin_contents ) {
+						WP_CLI::error( 'Failed to read from STDIN.' );
+					}
+					self::$stdin_cache = (string) $stdin_contents;
+
+					// Save to cache file for subsequent processes
+					$write_result = file_put_contents( self::$stdin_cache_file, self::$stdin_cache );
+					if ( false === $write_result ) {
+						WP_CLI::error( 'Failed to write STDIN cache file.' );
+					}
+
+					// Note: We intentionally don't clean up the cache file immediately.
+					// The parent process (or system temp cleanup) will handle this.
+					// If we delete it in the shutdown function, subsequent child processes
+					// won't be able to read it.
 				}
-				// PHPStan: After error check above, $stdin_contents is guaranteed to be string.
-				self::$stdin_cache = (string) $stdin_contents;
 			}
 			eval( '?>' . self::$stdin_cache );
 		} elseif ( $use_include ) {
