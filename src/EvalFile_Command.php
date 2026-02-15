@@ -12,6 +12,16 @@ class EvalFile_Command extends WP_CLI_Command {
 	const SHEBANG_PATTERN = '/^(#!.*)$/m';
 
 	/**
+	 * Cache for STDIN contents to support alias groups.
+	 *
+	 * When using alias groups, the same command is executed multiple times.
+	 * STDIN can only be read once, so we cache it for reuse.
+	 *
+	 * @var string|null
+	 */
+	private static $stdin_cache = null;
+
+	/**
 	 * Loads and executes a PHP file.
 	 *
 	 * Note: because code is executed within a method, global variables need
@@ -96,7 +106,19 @@ class EvalFile_Command extends WP_CLI_Command {
 		unset( $positional_args );
 
 		if ( '-' === $file ) {
-			eval( '?>' . file_get_contents( 'php://stdin' ) );
+			// Cache STDIN contents to support alias groups.
+			// When using alias groups, each site runs in a separate process,
+			// but they all share the same STDIN. Once STDIN is read, it's consumed.
+			// We cache it on first read so subsequent sites can reuse it.
+			if ( null === self::$stdin_cache ) {
+				$stdin_contents = file_get_contents( 'php://stdin' );
+				if ( false === $stdin_contents ) {
+					WP_CLI::error( 'Failed to read from STDIN.' );
+				}
+				// PHPStan: After error check above, $stdin_contents is guaranteed to be string.
+				self::$stdin_cache = (string) $stdin_contents;
+			}
+			eval( '?>' . self::$stdin_cache );
 		} elseif ( $use_include ) {
 			include $file;
 		} else {
