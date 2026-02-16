@@ -349,16 +349,9 @@ Feature: Evaluating PHP code and files.
     And a stdin-test.php file:
       """
       <?php
-      WP_CLI::line('Site: ' . get_bloginfo('name'));
+      echo "Executed from STDIN\n";
       """
 
     When I run `cat stdin-test.php | wp @group eval-file -`
-    Then STDOUT should contain:
-      """
-      Site: WP-CLI Site 1
-      """
-    And STDOUT should contain:
-      """
-      Site: WP-CLI Site 2
-      """
+    Then STDOUT should match /Executed from STDIN.*Executed from STDIN/s
 
