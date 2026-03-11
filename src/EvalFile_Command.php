@@ -119,14 +119,18 @@ class EvalFile_Command extends WP_CLI_Command {
 			// but they all share the same STDIN. Once STDIN is read, it's consumed.
 			// We cache it in a temporary file that persists across processes.
 			if ( null === self::$stdin_cache ) {
-				// Get a unique identifier for the cache file
-				// Use parent PID on Unix-like systems for sharing across child processes
-				// On Windows, this feature may have limitations due to lack of posix_getppid()
-				if ( function_exists( 'posix_getppid' ) ) {
+				// Get a unique identifier for the cache file based on STDIN's inode.
+				// All processes sharing the same STDIN pipe will have the same inode,
+				// allowing them to share the cache file even if they have different PPIDs.
+				$stdin_stat = fstat( STDIN );
+				if ( false !== $stdin_stat && isset( $stdin_stat['ino'] ) && isset( $stdin_stat['dev'] ) ) {
+					// Use device + inode to uniquely identify this STDIN stream
+					$cache_id = $stdin_stat['dev'] . '-' . $stdin_stat['ino'];
+				} elseif ( function_exists( 'posix_getppid' ) ) {
+					// Fallback to parent PID if fstat fails
 					$cache_id = posix_getppid();
 				} else {
-					// On Windows or systems without POSIX, use an environment variable if available
-					// or fall back to current PID (which won't share across processes)
+					// Final fallback for Windows or when POSIX functions are unavailable
 					$cache_id = getenv( 'WP_CLI_STDIN_CACHE_ID' ) ?: getmypid();
 				}
 				self::$stdin_cache_file = sys_get_temp_dir() . '/wp-cli-eval-stdin-' . $cache_id . '.php';
