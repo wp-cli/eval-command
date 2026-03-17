@@ -122,16 +122,34 @@ class EvalFile_Command extends WP_CLI_Command {
 				// Get a unique identifier for the cache file based on STDIN's inode.
 				// All processes sharing the same STDIN pipe will have the same inode,
 				// allowing them to share the cache file even if they have different PPIDs.
+				$cache_id   = false;
 				$stdin_stat = fstat( STDIN );
 				if ( false !== $stdin_stat && isset( $stdin_stat['ino'] ) && isset( $stdin_stat['dev'] ) ) {
 					// Use device + inode to uniquely identify this STDIN stream
 					$cache_id = $stdin_stat['dev'] . '-' . $stdin_stat['ino'];
 				} elseif ( function_exists( 'posix_getppid' ) ) {
-					// Fallback to parent PID if fstat fails
-					$cache_id = posix_getppid();
-				} else {
-					// Final fallback for Windows or when POSIX functions are unavailable
-					$cache_id = getenv( 'WP_CLI_STDIN_CACHE_ID' ) ?: getmypid();
+					// Fallback to parent PID if fstat fails.
+					$ppid = posix_getppid();
+					// PHPStan doesn't understand that posix_getppid() can return false even after function_exists check.
+					// @phpstan-ignore-next-line
+					if ( false !== $ppid ) {
+						$cache_id = (string) $ppid;
+					}
+				}
+
+				// If we couldn't determine a shared cache key, fall back to environment variable or process ID.
+				if ( false === $cache_id ) {
+					$cache_id = getenv( 'WP_CLI_STDIN_CACHE_ID' );
+					if ( ! $cache_id ) {
+						$cache_id = getmypid();
+						WP_CLI::debug(
+							sprintf(
+								'Could not determine a shared cache key for STDIN. Falling back to process ID (%d). STDIN with alias groups may not work on this system without setting WP_CLI_STDIN_CACHE_ID.',
+								$cache_id
+							),
+							'eval'
+						);
+					}
 				}
 				self::$stdin_cache_file = sys_get_temp_dir() . '/wp-cli-eval-stdin-' . $cache_id . '.php';
 
