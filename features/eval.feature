@@ -38,6 +38,22 @@ Feature: Evaluating PHP code and files.
       #!
       """
 
+  Scenario: Has access to associative args
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      eval:
+        foo: bar
+      post list:
+        format: count
+      """
+
+    When I run `wp eval 'echo json_encode( $assoc_args );'`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo": "bar"}
+      """
+
   Scenario: Eval without WordPress install
     Given an empty directory
 
