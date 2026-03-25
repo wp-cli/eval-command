@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\Utils;
+use WP_CLI\Path;
 
 class EvalFile_Command extends WP_CLI_Command {
 
@@ -103,7 +104,7 @@ class EvalFile_Command extends WP_CLI_Command {
 			$file_contents = (string) file_get_contents( $file );
 
 			// Adjust for __FILE__ and __DIR__ magic constants.
-			$file_contents = Utils\replace_path_consts( $file_contents, $file );
+			$file_contents = Path::replace_path_consts( $file_contents, $file );
 
 			// Check for and remove she-bang.
 			if ( 0 === strncmp( $file_contents, '#!', 2 ) ) {
