@@ -177,8 +177,8 @@ Feature: Evaluating PHP code and files.
       <?php
       echo __FILE__;
       """
-    
-    When I run `wp eval "echo DIRECTORY_SEPARATOR;"`
+
+    When I run `wp eval "echo DIRECTORY_SEPARATOR;" --skip-wordpress`
     And save STDOUT as {DIRECTORY_SEPARATOR}
 
     And I run `wp eval-file script.php --skip-wordpress`
@@ -228,8 +228,8 @@ Feature: Evaluating PHP code and files.
       <?php
       echo ' __FILE__ => ' . __FILE__;
       """
-    
-    When I run `wp eval "echo DIRECTORY_SEPARATOR;"`
+
+    When I run `wp eval "echo DIRECTORY_SEPARATOR;" --skip-wordpress`
     And save STDOUT as {DIRECTORY_SEPARATOR}
 
     And I run `wp eval-file script.php --skip-wordpress`
