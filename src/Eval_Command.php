@@ -39,7 +39,6 @@ class Eval_Command extends WP_CLI_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 
-		// @phpstan-ignore closure.unusedUse
 		$execute_closure = function () use ( $args, $assoc_args ) {
 			eval( $args[0] );
 		};
