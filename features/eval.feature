@@ -75,7 +75,7 @@ Feature: Evaluating PHP code and files.
     And a script.php file:
       """
       <?php
-      var_dump(defined("WP_CONTENT_DIR"));
+      var_dump( defined( 'WP_CONTENT_DIR' ) );
       """
 
     When I try `wp eval-file script.php`
@@ -197,12 +197,12 @@ Feature: Evaluating PHP code and files.
       """
       <?php
       echo '__FILE__';
-      echo "__FILE__";
+      echo '__FILE__';
       echo '"__FILE__"';
       echo "'__FILE__'";
 
       echo ' foo __FILE__ bar ';
-      echo " foo __FILE__ bar ";
+      echo ' foo __FILE__ bar ';
       echo '" foo __FILE__ bar "';
       echo "' foo __FILE__ bar '";
       """
@@ -291,8 +291,8 @@ Feature: Evaluating PHP code and files.
     And a hook-script.php file:
       """
       <?php
-      echo "Hook: " . current_action() . "\n";
-      echo "Is admin: " . (is_admin() ? 'yes' : 'no') . "\n";
+      echo 'Hook: ' . current_action() . "\n";
+      echo 'Is admin: ' . ( is_admin() ? 'yes' : 'no' ) . "\n";
       """
 
     When I run `wp eval-file hook-script.php --hook=init`
@@ -326,7 +326,7 @@ Feature: Evaluating PHP code and files.
     And a script.php file:
       """
       <?php
-      echo "test";
+      echo 'test';
       """
 
     When I try `wp eval-file script.php --hook=init --skip-wordpress`
@@ -341,8 +341,8 @@ Feature: Evaluating PHP code and files.
     And a args-script.php file:
       """
       <?php
-      echo "Hook: " . current_action() . "\n";
-      echo "Args: " . implode(' ', $args) . "\n";
+      echo 'Hook: ' . current_action() . "\n";
+      echo 'Args: ' . implode( ' ', $args ) . "\n";
       """
 
     When I run `wp eval-file args-script.php arg1 arg2 --hook=init`
