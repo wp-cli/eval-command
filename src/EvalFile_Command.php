@@ -6,13 +6,6 @@ use WP_CLI\Path;
 class EvalFile_Command extends WP_CLI_Command {
 
 	/**
-	 * Regular expression pattern to match the shell shebang.
-	 *
-	 * @var string
-	 */
-	const SHEBANG_PATTERN = '/^(#!.*)$/m';
-
-	/**
 	 * Loads and executes a PHP file.
 	 *
 	 * Note: because code is executed within a method, global variables need
@@ -101,14 +94,23 @@ class EvalFile_Command extends WP_CLI_Command {
 		} elseif ( $use_include ) {
 			include $file;
 		} else {
-			$file_contents = (string) file_get_contents( $file );
+			$file_contents = file_get_contents( $file );
+
+			if ( false === $file_contents ) {
+				WP_CLI::error( "Could not read '$file'." );
+			}
 
 			// Adjust for __FILE__ and __DIR__ magic constants.
-			$file_contents = Path::replace_path_consts( $file_contents, $file );
+			try {
+				$file_contents = Path::replace_path_consts( $file_contents, $file );
+			} catch ( RuntimeException $e ) {
+				WP_CLI::error( "Could not prepare '$file' for evaluation: " . $e->getMessage() );
+			}
 
-			// Check for and remove she-bang.
+			// Remove a shebang line, but keep the line break so line numbers stay intact.
 			if ( 0 === strncmp( $file_contents, '#!', 2 ) ) {
-				$file_contents = preg_replace( static::SHEBANG_PATTERN, '', $file_contents );
+				$line_break    = strpos( $file_contents, "\n" );
+				$file_contents = false === $line_break ? '' : substr( $file_contents, $line_break );
 			}
 
 			eval( '?>' . $file_contents );
