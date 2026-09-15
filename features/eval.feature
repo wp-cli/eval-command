@@ -271,6 +271,91 @@ Feature: Evaluating PHP code and files.
       eval()'d code
       """
 
+  Scenario: Eval-file will not replace __FILE__ and __DIR__ in heredoc and nowdoc strings
+    Given an empty directory
+    And a script.php file:
+      """
+      <?php
+      echo <<<TXT
+      heredoc: __FILE__ __DIR__
+
+      TXT;
+      echo <<<'TXT'
+      nowdoc: __FILE__ __DIR__
+
+      TXT;
+      echo 'code: ' . basename( __FILE__ ) . ' ' . basename( __DIR__ );
+      """
+
+    When I run `wp eval-file script.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      heredoc: __FILE__ __DIR__
+      """
+    And STDOUT should contain:
+      """
+      nowdoc: __FILE__ __DIR__
+      """
+    And STDOUT should contain:
+      """
+      code: script.php
+      """
+    And STDOUT should not contain:
+      """
+      eval()'d code
+      """
+
+  Scenario: Eval-file can handle large files with long strings
+    Given an empty directory
+    And a generate.php file:
+      """
+      <?php
+      $links = str_repeat( '<a href="https://example.com/">it\'s "quoted"</a>' . PHP_EOL, 20000 );
+      $text  = str_repeat( 'a', 1024 * 1024 );
+
+      $script  = "<?php\n";
+      $script .= "\$links = <<<HTML\n{$links}\nHTML;\n";
+      $script .= "\$text = '{$text}';\n";
+      $script .= "echo basename( __FILE__ ), PHP_EOL, strlen( \$text ), PHP_EOL;\n";
+
+      file_put_contents( 'script.php', $script );
+      """
+
+    When I run `wp eval-file generate.php --skip-wordpress`
+    And I run `wp eval-file script.php --skip-wordpress`
+    Then STDOUT should be:
+      """
+      script.php
+      1048576
+      """
+    And STDERR should be empty
+
+  Scenario: Eval-file only removes the shebang line at the start of the file
+    Given an empty directory
+    And a script.php file:
+      """
+      #!/usr/bin/env wp
+      <?php
+      echo <<<TXT
+      #!not a shebang
+      TXT;
+      echo PHP_EOL, __LINE__;
+      """
+
+    When I run `wp eval-file script.php --skip-wordpress`
+    Then STDOUT should contain:
+      """
+      #!not a shebang
+      """
+    And STDOUT should contain:
+      """
+      6
+      """
+    But STDOUT should not contain:
+      """
+      #!/usr/bin/env
+      """
+
   Scenario: Eval with --hook flag
     Given a WP install
 
